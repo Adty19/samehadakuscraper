@@ -1,13 +1,12 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "api/*.js",
-      "use": "@vercel/node"
-    }
+    { "src": "api/*.js", "use": "@vercel/node" }
   ],
   "routes": [
-    { "src": "/api/recent", "dest": "/api/recent.js" },
-    { "src": "/api/watch", "dest": "/api/watch.js" }
+    { "src": "/latest", "dest": "/api/latest.js" },
+    { "src": "/search", "dest": "/api/search.js" },
+    { "src": "/detail", "dest": "/api/detail.js" },
+    { "src": "/watch", "dest": "/api/watch.js" }
   ]
 }
