@@ -1,17 +1,21 @@
-import axios from 'axios';
-import * as cheerio from 'cheerio';
+const axios = require('axios');
+const cheerio = require('cheerio');
 
-export default async function handler(req, res) {
-  const { slug } = req.query;
+module.exports = async (req, res) => {
+  const { url } = req.query;
+  if (!url) return res.status(400).json({ error: 'Missing episode URL' });
 
   try {
-    const response = await axios.get(`https://samehadaku.email/${slug}`);
-    const $ = cheerio.load(response.data);
+    const { data } = await axios.get(url);
+    const $ = cheerio.load(data);
 
-    const videoEmbed = $('iframe').attr('src') || null;
-
-    res.status(200).json({ videoUrl: videoEmbed });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch video' });
+    const iframe = $('iframe').first().attr('src');
+    if (iframe) {
+      res.status(200).json({ videoUrl: iframe });
+    } else {
+      res.status(404).json({ error: 'Video not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch streaming link.' });
   }
-}
+};
