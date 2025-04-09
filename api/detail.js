@@ -1,27 +1,24 @@
-import axios from 'axios';
-import * as cheerio from 'cheerio';
+import { fetchHTML } from '../utils/fetchHTML.js';
 
 export default async function handler(req, res) {
-  const { slug } = req.query;
+  const { url } = req.query;
+  if (!url) return res.status(400).json({ error: 'Missing url param' });
 
   try {
-    const response = await axios.get(`https://samehadaku.email/${slug}`);
-    const $ = cheerio.load(response.data);
-
-    const title = $('h1.entry-title').text().trim();
-    const description = $('div.entry-content p').first().text().trim();
+    const $ = await fetchHTML(url);
+    const title = $('h1.entry-title').text();
+    const thumbnail = $('.thumb img').attr('src');
     const episodes = [];
 
-    $('div.entry-content a').each((i, el) => {
-      const ep = $(el).text();
-      const url = $(el).attr('href');
-      if (url.includes('samehadaku.email')) {
-        episodes.push({ ep, url });
-      }
+    $('.eplister ul li').each((_, el) => {
+      episodes.push({
+        title: $(el).find('.epl-title').text().trim(),
+        link: $(el).find('a').attr('href')
+      });
     });
 
-    res.status(200).json({ title, description, episodes });
+    res.status(200).json({ title, thumbnail, episodes });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch detail' });
+    res.status(500).json({ error: 'Failed to fetch anime detail' });
   }
 }
