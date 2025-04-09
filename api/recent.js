@@ -1,22 +1,22 @@
-import axios from 'axios';
-import * as cheerio from 'cheerio';
+const axios = require('axios');
+const cheerio = require('cheerio');
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   try {
-    const response = await axios.get('https://samehadaku.email/');
-    const $ = cheerio.load(response.data);
-    const results = [];
+    const { data } = await axios.get('https://samehadaku.email/');
+    const $ = cheerio.load(data);
 
-    $('.post-show').each((i, el) => {
+    const animeList = [];
+    $('.content .post-show').each((i, el) => {
       const title = $(el).find('.post-title a').text().trim();
-      const link = $(el).find('.post-title a').attr('href');
-      const thumbnail = $(el).find('img').attr('src');
+      const url = $(el).find('.post-title a').attr('href');
+      const image = $(el).find('img').attr('src');
 
-      results.push({ title, link, thumbnail });
+      animeList.push({ title, url, image });
     });
 
-    res.status(200).json({ results });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch data' });
+    res.status(200).json({ results: animeList });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch anime list.' });
   }
-}
+};
